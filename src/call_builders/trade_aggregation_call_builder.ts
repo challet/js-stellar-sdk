@@ -1,9 +1,9 @@
 /* tslint:disable: variable-name */
 import { Asset } from "stellar-base";
-import { CallBuilder } from "./call_builder";
-import { BadRequestError } from "./errors";
-import { Horizon } from "./horizon_api";
-import { ServerApi } from "./server_api";
+import { CallBuilder } from "./../call_builder";
+import { BadRequestError } from "./../errors";
+import { Horizon } from "./../horizon_api";
+import { ServerApi } from "./../server_api";
 
 const allowedResolutions = [
   60000,

@@ -1,6 +1,6 @@
-import { CallBuilder } from "./call_builder";
-import { BadRequestError } from "./errors";
-import { ServerApi } from "./server_api";
+import { CallBuilder } from "./../call_builder";
+import { BadRequestError } from "./../errors";
+import { ServerApi } from "./../server_api";
 
 /**
  * Creates a new {@link OfferCallBuilder} pointed to server defined by serverUrl.

@@ -1,6 +1,6 @@
 import { Asset } from "stellar-base";
-import { CallBuilder } from "./call_builder";
-import { ServerApi } from "./server_api";
+import { CallBuilder } from "./../call_builder";
+import { ServerApi } from "./../server_api";
 
 /**
  * Creates a new {@link TradesCallBuilder} pointed to server defined by serverUrl.
