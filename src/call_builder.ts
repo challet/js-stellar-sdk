@@ -1,18 +1,14 @@
 import isNode from "detect-node";
 import URI from "urijs";
-import URITemplate from "urijs/src/URITemplate";
 
 import { BadRequestError, NetworkError, NotFoundError } from "./errors";
 import { Horizon } from "./horizon_api";
 import HorizonAxiosClient from "./horizon_axios_client";
 import { ServerApi } from "./server_api";
+import { HalResponseWrapper } from "./hal_response_wrapper";
 
 /* tslint:disable-next-line:no-var-requires */
 const version = require("../package.json").version;
-
-// Resources which can be included in the Horizon response via the `join`
-// query-param.
-const JOINABLE = ["transaction"];
 
 type Constructable<T> = new (e: string) => T;
 
@@ -61,10 +57,10 @@ export class CallBuilder<
    * Triggers a HTTP request using this builder's current configuration.
    * @returns {Promise} a Promise that resolves to the server's response.
    */
-  public call(): Promise<T> {
+  public call(activeResponse: boolean = true): Promise<T> {
     this.checkFilter();
     return this._sendNormalRequest(this.url).then((r) =>
-      this._parseResponse(r),
+      activeResponse ? this._parseResponse(r) : r,
     );
   }
   //// TODO: Migrate to async, BUT that's a change in behavior and tests "rejects two filters" will fail.
@@ -239,30 +235,6 @@ export class CallBuilder<
   }
 
   /**
-   * Convert a link object to a function that fetches that link.
-   * @private
-   * @param {object} link A link object
-   * @param {bool} link.href the URI of the link
-   * @param {bool} [link.templated] Whether the link is templated
-   * @returns {function} A function that requests the link
-   */
-  private _requestFnForLink(link: Horizon.ResponseLink): (opts?: any) => any {
-    return async (opts: any = {}) => {
-      let uri;
-
-      if (link.templated) {
-        const template = URITemplate(link.href);
-        uri = URI(template.expand(opts) as any); // TODO: fix upstream types.
-      } else {
-        uri = URI(link.href);
-      }
-
-      const r = await this._sendNormalRequest(uri);
-      return this._parseResponse(r);
-    };
-  }
-
-  /**
    * Given the json response, find and convert each link into a function that
    * calls that link.
    * @private
@@ -270,35 +242,7 @@ export class CallBuilder<
    * @returns {object} JSON response with string links replaced with functions
    */
   private _parseRecord(json: any): any {
-    if (!json._links) {
-      return json;
-    }
-    for (const key of Object.keys(json._links)) {
-      const n = json._links[key];
-      let included = false;
-      // If the key with the link name already exists, create a copy
-      if (typeof json[key] !== "undefined") {
-        json[`${key}_attr`] = json[key];
-        included = true;
-      }
-
-      /*
-       If the resource can be side-loaded using `join` query-param then don't
-       try to load from the server. We need to whitelist the keys which are
-       joinable, since there are other keys like `ledger` which is included in
-       some payloads, but doesn't represent the ledger resource, in that
-       scenario we want to make the call to the server using the URL from links.
-      */
-      if (included && JOINABLE.indexOf(key) >= 0) {
-        const record = this._parseRecord(json[key]);
-        // Maintain a promise based API so the behavior is the same whether you
-        // are loading from the server or in-memory (via join).
-        json[key] = async () => record;
-      } else {
-        json[key] = this._requestFnForLink(n as Horizon.ResponseLink);
-      }
-    }
-    return json;
+    return new HalResponseWrapper(json).out();
   }
 
   private async _sendNormalRequest(initialUrl: uri.URI) {

@@ -217,7 +217,7 @@ describe('server.js non-transaction tests', function() {
       this.server
         .feeStats()
         .then((feeStats) => {
-          expect(feeStats).to.be.equal(response);
+          expect(feeStats).to.be.deep.equal(response);
           done();
         })
         .catch(function(err) {
