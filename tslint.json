@@ -1,6 +1,7 @@
 {
   "extends": ["@stellar/tslint-config"],
   "rules": {
-    "max-line-length": [false]
+    "max-line-length": [false],
+    "ordered-imports": [false]
   }
 }

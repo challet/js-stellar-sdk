@@ -1,4 +1,4 @@
-import { CallBuilder } from "./call_builder";
+import { CallBuilder } from "./../call_builder";
 
 export class FriendbotBuilder extends CallBuilder<any> {
   constructor(serverUrl: uri.URI, address: string) {
