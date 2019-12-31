@@ -12,6 +12,7 @@ export * from "./server_api";
 // stellar-sdk classes to expose
 export * from "./account_response";
 export * from "./errors";
+export * from "./hal_response_wrapper";
 export { Config } from "./config";
 export { Server } from "./server";
 export {
